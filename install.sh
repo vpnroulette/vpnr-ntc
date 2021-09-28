@@ -13,9 +13,15 @@ OVPNSTATUS_CFG=' { "port": 3013, "bind": "0.0.0.0", "servers": [ {"id": 0, "name
 OVPNSTATUS_SERVICE="etc/ovpnstatus.service"
 BANNER="etc/banner"
 
+function syschecks() {
+	# check if root 
+}
+
+
 function banner() {
 	clear
 	cat ${BANNER}
+	syschecks
 }
 
 
@@ -30,7 +36,7 @@ function installdeps() {
 		echo -e "${SP} - Compiling frontend (It can take a while be patient...) ${NC}"
 		cd openvpn-status 
 		npm install 
-		npm run build 2>/dev/null
+		npm run build 
 		echo -e "${SP} - Configuring Control dashboard [2/2]${NC}"
 		echo ${OVPNSTATUS_CFG} > cfg.json
 
@@ -44,21 +50,32 @@ function installdeps() {
 
 function checks() {
 	docker_status=$(systemctl show --property ActiveState docker|cut -d= -f2)
+	default_iface=$(netstat  -rn |grep UG |awk {' print $8'})
+	ip_addr=$(ifconfig ${default_iface}|grep netmask|awk {' print $2'})
 	if [ $docker_status != "active" ]; then 
 		echo -e "${ER}[ERR] - Can't find Docker daemon, please check if it's running...${NC}"
 	else
 		echo -e "${SP} Docker daemon running: OK :)${NC}"
 		echo -e "${SP} - Downloading VPNR docker images......${NC}"
 		docker pull ${NTC_IMG}
+		echo -e "${SP} Installing VPNR NTC ......${NC}"
+		cp $(dirname $0)/etc/vpnr-ntc /usr/local/bin/
+		echo -e "${SP} Type: vpnr-ntc to start the VPN server and connect to http://${ip_addr}:3013 to see the dashboard${NC}"
+		
 	
 	fi
 
 }
 
+function next() {
+	
+}
+
+
 banner
 installdeps
 checks
-
+next
 
 
 ### get sources:
