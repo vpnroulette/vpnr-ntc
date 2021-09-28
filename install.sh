@@ -2,8 +2,7 @@
 
 
 INSTALL_PATH="/opt/"
-NTC_SOURCE_URL=""
-NODESTATUS_SOURCE_URL=""
+NTC_IMG="zpol/vpnr-ntc-raspi:latest"
 SP="\e[35m>> \e[92m"
 NC="\e[39m"
 ER="\e[35m>> \e[31m"
@@ -24,16 +23,18 @@ function installdeps() {
 
 	for src in ${SRC_DEPENDENCIES[@]}; do
 		echo -e "${SP} Installing ( Control Dashboard ) ......${NC}"
-		cd ${INSTALL_PATH} && git clone ${src}
-		cd openvpn-status && npm install && npm run build
-		echo -e "${SP} Configuring Control dashboard ${NC}"
-		echo ${OVPNSTATUS_CFG} > cfg.json
+		echo -e "${SP} - Configuring Control dashboard [1/2]${NC}"
 		cp ${OVPNSTATUS_SERVICE} /lib/systemd/system/
 		systemctl enable ovpnstatus.service
+		cd ${INSTALL_PATH} && git clone ${src}
+		echo -e "${SP} - Compiling frontend (It can take a while be patient...) ${NC}"
+		cd openvpn-status && npm install && npm run build 2>/dev/null
+		echo -e "${SP} - Configuring Control dashboard [2/2]${NC}"
+		echo ${OVPNSTATUS_CFG} > cfg.json
+
 	done
 
 	#apt-get update
-
 	apt-get install -y ${PKG_DEPENDENCIES[@]}
 
 }
@@ -45,6 +46,9 @@ function checks() {
 		echo -e "${ER}[ERR] - Can't find Docker daemon, please check if it's running...${NC}"
 	else
 		echo -e "${SP} Docker daemon running: OK :)${NC}"
+		echo -e "${SP} - Downloading VPNR docker images......${NC}"
+		docker pull ${NTC_IMG}
+	
 	fi
 
 }
