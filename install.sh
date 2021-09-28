@@ -54,7 +54,7 @@ function get_stuff() {
 
 }
 
-
+banner
 installdeps
 get_stuff
 
