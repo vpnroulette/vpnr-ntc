@@ -30,7 +30,7 @@ function installdeps() {
 		echo -e "${SP} - Compiling frontend (It can take a while be patient...) ${NC}"
 		cd openvpn-status 
 		npm install 
-		npm run build 
+		npm run build > 2>/dev/null
 		echo -e "${SP} - Configuring Control dashboard [2/2]${NC}"
 		echo ${OVPNSTATUS_CFG} > cfg.json
 
