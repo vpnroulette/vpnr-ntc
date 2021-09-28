@@ -7,7 +7,7 @@ NODESTATUS_SOURCE_URL=""
 SP="\e[35m>> \e[92m"
 NC="\e[39m"
 ER="\e[35m>> \e[31m"
-PKG_DEPENDENCIES=('curl' 'figlet' 'toilet' 'node' 'npm' 'docker' 'git' 'openvpn')
+PKG_DEPENDENCIES=('curl' 'figlet' 'toilet' 'node' 'npm' 'docker.io' 'git' 'openvpn')
 SRC_DEPENDENCIES='https://github.com/AuspeXeu/openvpn-status.git'
 
 OVPNSTATUS_CFG=' { "port": 3013, "bind": "0.0.0.0", "servers": [ {"id": 0, "name": "VPNRoulette NTC", "host": "127.0.0.1","man_port": 7656} ], "username": "admin", "password": "admin", "web": { "dateFormat": "HH:mm - DD.MM.YY" } }'
@@ -32,17 +32,14 @@ function installdeps() {
 		systemctl enable ovpnstatus.service
 	done
 
-	apt-get update
+	#apt-get update
 
-	for pkg in ${PKG_DEPENDENCIES[@]}; do
-		echo -e "${SP} Installing ${pkg} ......OK ${NC}"
-		apt-get install -y ${pkg}
-	done
+	apt-get install -y ${PKG_DEPENDENCIES[@]}
 
 }
 
 
-function get_stuff() {
+function checks() {
 	docker_status=$(systemctl show --property ActiveState docker|cut -d= -f2)
 	if [ $docker_status != "active" ]; then 
 		echo -e "${ER}[ERR] - Can't find Docker daemon, please check if it's running...${NC}"
@@ -54,7 +51,8 @@ function get_stuff() {
 
 banner
 installdeps
-get_stuff
+checks
+
 
 
 ### get sources:
