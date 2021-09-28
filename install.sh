@@ -56,6 +56,8 @@ function get_stuff() {
 
 
 installdeps
+get_stuff
+
 
 ### get sources:
 # - NTC Nodestation Tunel Constructor
