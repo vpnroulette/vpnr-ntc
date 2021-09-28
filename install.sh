@@ -12,13 +12,11 @@ SRC_DEPENDENCIES='https://github.com/AuspeXeu/openvpn-status.git'
 
 OVPNSTATUS_CFG=' { "port": 3013, "bind": "0.0.0.0", "servers": [ {"id": 0, "name": "VPNRoulette NTC", "host": "127.0.0.1","man_port": 7656} ], "username": "admin", "password": "admin", "web": { "dateFormat": "HH:mm - DD.MM.YY" } }'
 OVPNSTATUS_SERVICE="etc/ovpnstatus.service"
+BANNER="/etc/banner"
 
 function banner() {
 	clear
-	echo -e "${SP} -------------------------------------------------- ${NC}"
-	echo -e "${SP} <<<<<<<<< VPN Roulette NTC Installation >>>>>>>>>> ${NC}"
-	echo -e "${SP} -------------------------------------------------- ${NC}"
-	echo "" && echo ""
+	cat ${BANNER}
 }
 
 
