@@ -1,0 +1,13 @@
+[Unit]
+Description=OpenVPN Status
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/opt/openvpn-status/
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
