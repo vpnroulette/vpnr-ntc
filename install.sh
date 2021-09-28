@@ -6,7 +6,7 @@ NTC_IMG="zpol/vpnr-ntc-raspi:latest"
 SP="\e[35m>> \e[92m"
 NC="\e[39m"
 ER="\e[35m>> \e[31m"
-PKG_DEPENDENCIES=('curl' 'figlet' 'toilet' 'node' 'npm' 'docker.io' 'git' 'openvpn')
+PKG_DEPENDENCIES=('curl' 'figlet' 'toilet' 'npm' 'docker.io' 'git')
 SRC_DEPENDENCIES='https://github.com/AuspeXeu/openvpn-status.git'
 
 OVPNSTATUS_CFG=' { "port": 3013, "bind": "0.0.0.0", "servers": [ {"id": 0, "name": "VPNRoulette NTC", "host": "127.0.0.1","man_port": 7656} ], "username": "admin", "password": "admin", "web": { "dateFormat": "HH:mm - DD.MM.YY" } }'
