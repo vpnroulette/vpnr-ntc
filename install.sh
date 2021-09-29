@@ -41,7 +41,7 @@ function installdeps() {
 		systemctl enable ovpnstatus.service
 		cd ${INSTALL_PATH} && git clone ${src}
 		echo -e "${SP} - Compiling frontend (It can take a while be patient...) ${NC}"
-		cd openvpn-status 
+		cd vpnr-control-dashboard
 		npm install 
 		npm run build &>/dev/null
 		echo -e "${SP} - Configuring Control dashboard [2/2]${NC}"
