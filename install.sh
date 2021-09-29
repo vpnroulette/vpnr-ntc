@@ -71,15 +71,10 @@ function checks() {
 
 }
 
-function next() {
-	
-}
-
 
 banner
 installdeps
 checks
-next
 
 
 ### get sources:
