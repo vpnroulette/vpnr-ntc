@@ -31,6 +31,10 @@ function banner() {
 
 function installdeps() {
 
+	echo -e "${SP} Checking dependencies ......${NC}"
+	#apt-get update
+	apt-get install -y ${PKG_DEPENDENCIES[@]}
+
 	for src in ${SRC_DEPENDENCIES[@]}; do
 		echo -e "${SP} Installing ( Control Dashboard ) ......${NC}"
 		echo -e "${SP} - Configuring Control dashboard [1/2]${NC}"
@@ -45,10 +49,6 @@ function installdeps() {
 		echo ${OVPNSTATUS_CFG} > cfg.json
 
 	done
-
-	#apt-get update
-	apt-get install -y ${PKG_DEPENDENCIES[@]}
-
 }
 
 
