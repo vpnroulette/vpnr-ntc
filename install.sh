@@ -40,7 +40,7 @@ function installdeps() {
 		cp ${OVPNSTATUS_SERVICE} /lib/systemd/system/
 		systemctl enable ovpnstatus.service
 		cd ${INSTALL_PATH} && git clone ${src}
-		echo -e "${SP} - Compiling frontend (It can take a while be patient...) ${NC}"
+		echo -e "${SP} - Compiling frontend (It can take a while (~) be patient...) ${NC}"
 		cd vpnr-control-dashboard
 		npm install 
 		npm run build &>/dev/null
@@ -64,7 +64,10 @@ function checks() {
 		echo -e "${SP} Installing VPNR NTC ......${NC}"
 		cd ${WD}
 		cp etc/vpnr-ntc /usr/local/bin/ && chmod +x /usr/local/bin/vpnr-ntc
+		echo -e "\n\n\n"
+		echo -e "${SP} CONGRATS! VPNRoulette NTC is installed in this system! :) ${NC}"
 		echo -e "${SP} Type: vpnr-ntc to start the VPN server and connect to http://${ip_addr}:3013 to see the dashboard${NC}"
+		echo -e "\n\n\n"
 		
 	
 	fi

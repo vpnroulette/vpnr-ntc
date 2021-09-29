@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 User=root
-WorkingDirectory=/opt/openvpn-status/
+WorkingDirectory=/opt/vpnr-control-dashboard/
 ExecStart=/usr/bin/node server.js
 Restart=on-failure
 RestartSec=5s
