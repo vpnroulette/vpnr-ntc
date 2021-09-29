@@ -63,6 +63,7 @@ function checks() {
 		echo -e "${SP} - Downloading VPNR docker images......${NC}"
 		docker pull ${NTC_IMG}
 		echo -e "${SP} Installing VPNR NTC ......${NC}"
+		echo "XXXXXXXXXXXXX Current dir $(dirname $0)"
 		cp $(dirname $0)/etc/vpnr-ntc /usr/local/bin/
 		echo -e "${SP} Type: vpnr-ntc to start the VPN server and connect to http://${ip_addr}:3013 to see the dashboard${NC}"
 		
