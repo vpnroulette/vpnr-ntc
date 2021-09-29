@@ -25,7 +25,6 @@ function syschecks() {
 function banner() {
 	clear
 	cat ${BANNER}
-	syschecks
 }
 
 
@@ -73,6 +72,7 @@ function checks() {
 
 
 banner
+syschecks
 installdeps
 checks
 
