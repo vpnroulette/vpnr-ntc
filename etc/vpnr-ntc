@@ -37,5 +37,6 @@ service ovpnstatus start
 #service ovpnstatus status
 
 #Open Control Dashboard
+sudo su - pi
 export DISPLAY=:0.0
 chromium-browser http://${ip_addr}:3013

@@ -17,7 +17,7 @@ armageddon() {
 
 function uninstall() {
 	# Remove installed packages if you want
-	apt-get  remove --purge npm openvpn figlet toilet docker.io git
+	apt-get  remove --purge npm openvpn figlet toilet docker.io 
 	# Disable ovpnstatus.service
 	service ovpnstatus stop 
 	systemctl disable ovpnstatus.service 
