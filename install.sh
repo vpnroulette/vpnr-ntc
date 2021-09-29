@@ -33,7 +33,7 @@ function installdeps() {
 
 	echo -e "${SP} Checking dependencies ......${NC}"
 	#apt-get update
-	apt-get install -y ${PKG_DEPENDENCIES[@]}
+	apt-get install -y ${PKG_DEPENDENCIES[@]} &>/dev/null
 
 	for src in ${SRC_DEPENDENCIES[@]}; do
 		echo -e "${SP} Installing ( Control Dashboard ) ......${NC}"
@@ -44,7 +44,7 @@ function installdeps() {
 		echo -e "${SP} - Compiling frontend (It can take a while be patient...) ${NC}"
 		cd openvpn-status 
 		npm install 
-		npm run build 
+		npm run build &>/dev/null
 		echo -e "${SP} - Configuring Control dashboard [2/2]${NC}"
 		echo ${OVPNSTATUS_CFG} > cfg.json
 
