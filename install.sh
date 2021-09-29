@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+WD=$(pwd)
 INSTALL_PATH="/opt"
 NTC_IMG="zpol/vpnr-ntc-raspi:latest"
 SP="\e[35m>> \e[92m"
@@ -62,7 +62,8 @@ function checks() {
 		echo -e "${SP} - Downloading VPNR docker images......${NC}"
 		docker pull ${NTC_IMG}
 		echo -e "${SP} Installing VPNR NTC ......${NC}"
-		cp $(dirname $0)/etc/vpnr-ntc /usr/local/bin/ && chmod +x /usr/local/bin/vpnr-ntc
+		cd ${WD}
+		cp etc/vpnr-ntc /usr/local/bin/ && chmod +x /usr/local/bin/vpnr-ntc
 		echo -e "${SP} Type: vpnr-ntc to start the VPN server and connect to http://${ip_addr}:3013 to see the dashboard${NC}"
 		
 	
