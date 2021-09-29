@@ -16,6 +16,9 @@ armageddon() {
 }
 
 function uninstall() {
+	# Remove installed packages if you want
+	apt-get  remove --purge npm openvpn figlet toilet docker.io git
+	# Remove configuration files
 	rm -rf /opt/openvpn-status/
 	rm -rf /usr/local/bin/vpnr-ntc
 	rm -rf /lib/systemd/system/ovpnstatus.service 
