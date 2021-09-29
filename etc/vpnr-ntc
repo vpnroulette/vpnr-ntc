@@ -16,7 +16,8 @@ docker run -v $OVPN_DATA:/etc/openvpn -d --name ${CONTAINER_NAME} -p 7656:7656/t
 
 for ((i=0;i<${CLIENTS};i++)) ; do 
 	echo ">> Generating client [#${i}]"
-	CLIENTNAME="client-${rstring}"
+	rstring_c=$(pwgen -1)
+	CLIENTNAME="client-${rstring_c}"
 	#echo "Generating client config into /tmp/${CLIENTNAME}"
 	docker run -v $OVPN_DATA:/etc/openvpn --rm -it ${VPNR_NTC_IMG} easyrsa build-client-full ${CLIENTNAME} nopass
 	docker run -v $OVPN_DATA:/etc/openvpn --rm ${VPNR_NTC_IMG} ovpn_getclient ${CLIENTNAME} > /tmp/${CLIENTNAME}.ovpn
@@ -27,6 +28,11 @@ done
 
 
 # start vpnr-ovpnstatus
-#echo "Starting control panel................[http://<YOU_LAN_IP_ADDR>:3013]"
+default_iface=$(netstat  -rn |grep UG |awk {' print $8'})
+ip_addr=$(ifconfig ${default_iface}|grep netmask|awk {' print $2'})
+echo "Starting Control Dashboard................[http://${ip_addr}:3013]"
 #docker run -p 3013:3013/tcp ${VPNR_OVPNSTATUS_IMG}
+systemctl enable ovpnstatus.service 
+service ovpnstatus start
+service ovpnstatus status
 
