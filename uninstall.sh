@@ -29,7 +29,8 @@ echo "This is going to destroy ALL images and volumes inside your docker"
 echo "Are you sure? [y/n]"
 read r
 case $r in 
-	Y|y) uninstall && armageddon ;;
+	Y|y) uninstall ;;
+	#Y|y) uninstall && armageddon ;;
 	N|n) echo "Bye" && exit 0 ;;
 	*) echo "??" && exit 1 ;;
 esac
