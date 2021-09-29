@@ -15,6 +15,10 @@ BANNER="etc/banner"
 
 function syschecks() {
 	# check if root 
+	if [ $UID != "0" ]; then
+		echo "Installation needs root permissions, please execute as root."
+		exit 3
+	fi
 }
 
 
