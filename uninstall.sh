@@ -22,7 +22,7 @@ function uninstall() {
 	service ovpnstatus stop 
 	systemctl disable ovpnstatus.service 
 	# Remove configuration files
-	rm -rf /opt/openvpn-status/
+	rm -rf /opt/vpnr*
 	rm -rf /usr/local/bin/vpnr-ntc
 	rm -rf /lib/systemd/system/ovpnstatus.service 
 }
