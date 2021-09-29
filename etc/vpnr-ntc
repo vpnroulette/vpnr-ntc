@@ -34,5 +34,8 @@ echo "Starting Control Dashboard................[http://${ip_addr}:3013]"
 #docker run -p 3013:3013/tcp ${VPNR_OVPNSTATUS_IMG}
 systemctl enable ovpnstatus.service 
 service ovpnstatus start
-service ovpnstatus status
+#service ovpnstatus status
 
+#Open Control Dashboard
+export DISPLAY=:0.0
+chromium-browser http://${ip_addr}:3013
