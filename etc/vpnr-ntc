@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 clear
 toilet --metal -f smblock "VPNRoulette NTC"
@@ -9,12 +9,17 @@ CONTAINER_NAME="vpnr-${rstring}"
 PUBLIC_IP_ADDR=$(curl -s ifconfig.io)
 VPNR_NTC_IMG="zpol/vpnr-ntc-raspi:latest"
 CLIENTS=3
+LOG_DIR="/var/log/vpnr-ntc"
+VPN_TUNNEL_TTL="3600"
+STATUS_FETCHER="vpnr-status-fetcher"
+
+mkdir ${LOG_DIR}
 
 docker run -v $OVPN_DATA:/etc/openvpn --rm ${VPNR_NTC_IMG} ovpn_genconfig -u udp://${PUBLIC_IP_ADDR}
 docker run -v $OVPN_DATA:/etc/openvpn --rm -it ${VPNR_NTC_IMG} ovpn_initpki nopass -e "EASY_RSA_BATCH=1"
 docker run -v $OVPN_DATA:/etc/openvpn -d --name ${CONTAINER_NAME} -p 7656:7656/tcp -p 1194:1194/udp --cap-add=NET_ADMIN  ${VPNR_NTC_IMG}
 
-for ((i=0;i<${CLIENTS};i++)) ; do 
+for ((i=0;i<${CLIENTS};i++)) ; do
 	echo ">> Generating client [#${i}]"
 	rstring_c=$(pwgen -1)
 	CLIENTNAME="client-${rstring_c}"
@@ -22,7 +27,7 @@ for ((i=0;i<${CLIENTS};i++)) ; do
 	docker run -v $OVPN_DATA:/etc/openvpn --rm -it ${VPNR_NTC_IMG} easyrsa build-client-full ${CLIENTNAME} nopass
 	docker run -v $OVPN_DATA:/etc/openvpn --rm ${VPNR_NTC_IMG} ovpn_getclient ${CLIENTNAME} > /tmp/${CLIENTNAME}.ovpn
 
-done 
+done
 
 
 
@@ -32,7 +37,7 @@ default_iface=$(netstat  -rn |grep UG |awk {' print $8'})
 ip_addr=$(ifconfig ${default_iface}|grep netmask|awk {' print $2'})
 echo "Starting Control Dashboard................[http://${ip_addr}:3013]"
 #docker run -p 3013:3013/tcp ${VPNR_OVPNSTATUS_IMG}
-systemctl enable ovpnstatus.service 
+systemctl enable ovpnstatus.service
 service ovpnstatus start
 #service ovpnstatus status
 
@@ -40,3 +45,69 @@ service ovpnstatus start
 sudo su - pi
 export DISPLAY=:0.0
 chromium-browser http://${ip_addr}:3013
+
+
+# Install status fetcher crontab
+#(crontab -l ; echo "* * * * * ${STATUS_FETCHER}") | crontab -
+
+
+function register_node() {
+
+        # TODO: Function to make a port knocking sequence ;)
+        # knock .....
+        #Gen Random name
+        #RANDOM_NAME=$(curl https://www.behindthename.com/random/random.php\?number\=2\&sets\=1\&gender\=both\&surname\=\&all\=yes 2>/dev/null|grep -i "random name is" -A6|grep -i href | sed -e 's/<[^>]*>//g' | sed "s/^\ //"|sed "s/\ $//" |sed "s/\&//"|sed "s/\ \ /\ /g"|sed "s/\#//"|sed "s/\;//"|tr ' ' '-')
+        RANDOM_NAME=$(pwgen -1)
+        clr_green ">>> " -n; clr_magenta "Registering node [ ${RANDOM_NAME} ] on VPNRoulette API ......................."
+				echo "${RANDOM_NAME}" > ${LOG_DIR}/vpnr-hostid
+        # Add Call to API for registering node
+        #echo ${RANDOM_NAME}
+        curl -s -L -X POST "http://api.vpnroulette.com:81/api/auth/signup" -H "Content-Type: application/json" -H "X-Requested-With: XMLHttpRequest"  --data-raw "{ \"name\": \"${RANDOM_NAME}\", \"email\": \"${RANDOM_NAME}@node.vpnroulette.net\", \"password\": \"2020-2020-2020\" }" 2>/dev/null
+
+}
+
+function sync_data() {
+
+  register_node
+  # nc=$(ls /tmp/)
+  # ls -lart /tmp/
+
+  HOST="api.vpnroulette.com:81"
+  IP=$(curl -s ipinfo.io/ip 2>/dev/null |sed "s/%$//")
+        PORT=1194
+        TTL=${VPN_TUNNEL_TTL}
+        EXPIRE_DATE=$(date +%Y%m%d-%H%M%S --date="+$(expr $TTL / 60 ) minutes ";) # <--- CALC EXPIRE DATE!!
+        echo ""
+        clr_green ">>> " -n; clr_magenta "VPN Server expiration date: ${EXPIRE_DATE}"
+        clr_green ">>> " -n; clr_magenta "Syncing data with servers network,.........................."
+        TOKEN=$(curl -s -L -X POST "http://${HOST}/api/auth/login" -H "Content-Type: application/json" -H "X-Requested-With: XMLHttpRequest"  --data-raw "{ \"name\": \"${RANDOM_NAME}\", \"email\": \"${RANDOM_NAME}@node.vpnroulette.net\", \"password\": \"2020-2020-2020\" }"  |jq .access_token|sed "s/\"//g")
+
+        # TODO fix this shit!
+        i=1
+        OWNER="COMMUNITY"
+        COUNTRY=$(curl ifconfig.io/country_code)
+
+				for client_cfg in $(ls /tmp/client*); do
+					# TODO: Add HTTPS supprt!
+	        curl -s -X POST \
+	          --url http://${HOST}/api/auth/ficheros/${OWNER}/${COUNTRY} \
+	          --header "Authorization: Bearer ${TOKEN}" \
+	          --header 'Content-Type: multipart/form-data' \
+	          --header 'X-Requested-With: XMLHttpRequest' \
+	          --header "port: ${PORT}" \
+	          --header "ttl: ${TTL}" \
+	          --header "expire_date: ${EXPIRE_DATE}" \
+	          --header 'content-type: multipart/form-data; boundary=---011000010111000001101001' \
+	          -F "file=@/tmp/${client_cfg}" &>/dev/null
+	          if [ $? != "0" ]
+	          then
+	            clr_red ">>> - [ERROR]: Something went wrong (Try to execute the same script with: bash -x $0 to debug the issue)"
+	          else
+	            clr_green ">>> " -n; clr_magenta "Tunel sucessfully registered on VPNR Database! :)"
+	          fi
+				done
+
+
+}
+
+sync_data
