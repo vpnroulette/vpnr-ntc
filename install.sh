@@ -14,7 +14,7 @@ OVPNSTATUS_SERVICE="etc/ovpnstatus.service"
 BANNER="etc/banner"
 
 function syschecks() {
-	# check if root 
+	# check if root
 	if [ $UID != "0" ]; then
 		echo "Installation needs root permissions, please execute as root."
 		exit 3
@@ -42,7 +42,7 @@ function installdeps() {
 		cd ${INSTALL_PATH} && git clone ${src}
 		echo -e "${SP} - Compiling frontend (It can take a while (~) be patient...) ${NC}"
 		cd vpnr-control-dashboard
-		npm install 
+		npm install
 		npm run build &>/dev/null
 		echo -e "${SP} - Configuring Control dashboard [2/2]${NC}"
 		echo ${OVPNSTATUS_CFG} > cfg.json
@@ -55,7 +55,7 @@ function checks() {
 	docker_status=$(systemctl show --property ActiveState docker|cut -d= -f2)
 	default_iface=$(netstat  -rn |grep UG |awk {' print $8'})
 	ip_addr=$(ifconfig ${default_iface}|grep netmask|awk {' print $2'})
-	if [ $docker_status != "active" ]; then 
+	if [ $docker_status != "active" ]; then
 		echo -e "${ER}[ERR] - Can't find Docker daemon, please check if it's running...${NC}"
 	else
 		echo -e "${SP} Docker daemon running: OK :)${NC}"
@@ -65,11 +65,14 @@ function checks() {
 		cd ${WD}
 		cp etc/vpnr-ntc /usr/local/bin/ && chmod +x /usr/local/bin/vpnr-ntc
 		echo -e "\n\n\n"
+		echo -e "${SP} Starting VPNR NTC OVPN Status service ......${NC}"
+		# systemctl daemon-reload
+		service ovpnstatus start
 		echo -e "${SP} CONGRATS! VPNRoulette NTC is installed in this system! :) ${NC}"
 		echo -e "${SP} Type: vpnr-ntc to start the VPN server and connect to http://${ip_addr}:3013 to see the dashboard${NC}"
 		echo -e "\n\n\n"
-		
-	
+
+
 	fi
 
 }
