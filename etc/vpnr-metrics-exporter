@@ -1,0 +1,110 @@
+#!/bin/bash
+
+STATUS_FILE="/var/log/vpnr-ntc/vpnr.status"
+METRICS_FILE="/var/log/vpnr-ntc/metrics/index.html"
+COUNTER_FILE="/var/log/vpnr-ntc/counter.tmp"
+COUNTER="/var/log/vpnr-ntc/counter"
+
+#find the proper container
+CONTAINER_ID=$(docker ps |grep vpnr|awk {' print $1 '})
+
+#get log status from container
+docker cp ${CONTAINER_ID}:/tmp/openvpn-status.log ${STATUS_FILE}
+
+
+clients_connected=$(cat ${STATUS_FILE} |grep "^CLIENT_LIST"|wc -l)
+
+
+
+
+
+function get_version() {
+	OVPN_VERSION=$(cat ${STATUS_FILE}|grep TITLE|cut -d, -f2)
+
+}
+
+
+function count_total_diff_users() {
+	# get ip addr and store it to compare afterwards
+	cli_ip_addr=$1
+	ip_already_exists=$(grep -c ${cli_ip_addr} ${COUNTER_FILE})
+	if [ ${ip_already_exists} != "0" ]; then
+		#echo "This IP address already exists on db not counting it"
+	else
+		#echo "This IP address DOES NOT exist storing for counting..."
+		echo "$(date +%Y-%m-%d_%H:%M:%S);${cli_ip_addr}" >> ${COUNTER_FILE}
+	fi
+	total_clients_connected=$(wc -l ${COUNTER_FILE})
+	echo "${total_clients_connected}" > ${COUNTER}
+
+}
+
+
+
+function gen_metrics() {
+
+
+
+	# create metrics header bytes received per client
+	echo -e "# HELP openvpn_bytes_received Amount of data received via the connection\n# TYPE openvpn_bytes_received gauge" > ${METRICS_FILE}
+	for client in $(cat /var/log/vpnr-ntc/vpnr.status|grep "^CLIENT_LIST"|tr ' ' '-')
+	do
+
+
+
+		CLIENT_ID=$(echo $client |cut -d, -f11)
+		CLIENT_NAME=$(echo $client |cut -d, -f2)
+		REAL_ADDRESS=$(echo $client |cut -d, -f3|cut -d: -f1)
+		VIRTUAL_ADDRESS=$(echo $client |cut -d, -f4)
+		BYTES_RECV=$(echo $client |cut -d, -f6)
+		BYTES_SENT=$(echo $client |cut -d, -f7)
+		CONNECTED_SINCE_UXT=$(echo $client |cut -d, -f9)
+
+		count_total_diff_users ${REAL_ADDRESS}
+
+		# Generate metrics JSON for FE
+#		jo -p name="${OVPN_VERSION}" \
+#			client-${CLIENT_ID}=$(jo client-id="${CLIENT_ID}" \
+#						client_name="${CLIENT_NAME}" \
+#						connected@1 \
+#						client_ip_addr="${REAL_ADDRESS}" \
+#						client_virtual_address="${VIRTUAL_ADDRESS}" \
+#						bytes_received=${BYTES_RECV} \
+#						bytes_sent=${BYTES_SENT} \
+#						connected_since_uxt=${CONNECTED_SINCE_UXT} ) |jq .
+#
+		# Generate prometheus metrics
+		echo -e "openvpn_bytes_received{common_name=\"${CLIENT_NAME}\",real_ip=\"${REAL_ADDRESS}\"} ${BYTES_RECV}" >> ${METRICS_FILE}
+
+	done
+
+	echo -e "# HELP openvpn_bytes_sent Amount of data sent via the connection\n# TYPE openvpn_bytes_sent gauge" >> ${METRICS_FILE}
+	for client in $(cat /var/log/vpnr-ntc/vpnr.status|grep "^CLIENT_LIST"|tr ' ' '-')
+	do
+		CLIENT_ID=$(echo $client |cut -d, -f11)
+		CLIENT_NAME=$(echo $client |cut -d, -f2)
+		REAL_ADDRESS=$(echo $client |cut -d, -f3|cut -d: -f1)
+		VIRTUAL_ADDRESS=$(echo $client |cut -d, -f4)
+		BYTES_RECV=$(echo $client |cut -d, -f6)
+		BYTES_SENT=$(echo $client |cut -d, -f7)
+		CONNECTED_SINCE_UXT=$(echo $client |cut -d, -f9)
+
+
+		echo -e "openvpn_bytes_sent{common_name=\"${CLIENT_NAME}\",real_ip=\"${REAL_ADDRESS}\"} ${BYTES_SENT}" >> ${METRICS_FILE}
+	done
+
+	# create metrics for vpnr node general status
+	echo -e "# HELP openvpn_clients_connected number of current clients connected\n# TYPE openvpn_clients_connected gauge" >> ${METRICS_FILE}
+	echo -e "openvpn_clients_connected{cli=\"current\"} ${clients_connected}.0" >> ${METRICS_FILE}
+
+}
+
+
+
+
+
+get_version
+gen_metrics
+
+
+cat ${METRICS_FILE}
